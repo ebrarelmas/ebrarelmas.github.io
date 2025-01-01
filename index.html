@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz Game</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js" defer></script>
+    <link rel="stylesheet" href="style.css" />
+
+</head>
+
+<body>
+    <div class="background">
+        <!-- Kategori Seçim Ekranı -->
+        <div id="username-screen" class="box">
+            <h2>Adınızı Giriniz</h2>
+            <form id="usernameForm">
+                <input required id="usernameInput" name="username" type="text" placeholder="Adınızı buraya yazınız." />
+                <button class="primary-btn" type="submit">Başla</button>
+            </form>
+        </div>
+
+        <!-- Kategori Seçim Ekranı -->
+        <div id="category-screen" class="box" style="display: none;">
+            <h2>Bir Kategori Seç</h2>
+            <button class="primary-btn" onclick="startGame('Matematik')">Matematik</button>
+            <button class="primary-btn" onclick="startGame('Coğrafya')">Coğrafya</button>
+            <button class="primary-btn" onclick="startGame('Tarih')">Tarih</button>
+        </div>
+
+        <!-- Quiz Ekranı -->
+        <div id="quiz-screen" class="box" style="display: none;">
+            <h2>KATEGORİ: <span id="currentCategory">Matematik</span></h2>
+            <h2>Puan: <span id="score">0</span></h2>
+            <h2>
+                Doğru: <span id="correctCount">0</span> | Yanlış: <span id="wrongCount">0</span>
+            </h2>
+            <h2>Kalan Süre: <span id="timer">30</span> Süre</h2>
+            <h3 id="question">Sorular burada gözükecek.</h3>
+            <form id="questionForm" onsubmit="checkAnswer(event)">
+                <input required id="answerInput" name="answer" type="number" placeholder="Cevabınızı buraya yazınız." />
+                <button class="primary-btn" type="submit">Gönder</button>
+            </form>
+            <div id="progress-container">
+                <div id="progress-bar"></div>
+            </div>
+            <button class="primary-btn" onclick="endGame()">Quiz'i Bitir</button>
+        </div>
+
+        <!-- Quiz Sonu -->
+        <div id="result-screen" class="box" style="display: none;">
+            <h2>Quiz Bitti!</h2>
+            <h2>Puanın: <span id="finalScore">0</span></h2>
+            <h2>
+                Doğru Cevaplar: <span id="finalCorrectCount">0</span> |
+                Yanlış Cevaplar: <span id="finalWrongCount">0</span>
+            </h2>
+            <button class="primary-btn" onclick="returnToMenu()">Menüye Dön</button>
+        </div>
+
+        <!-- Liderlik Tablosu -->
+        <div id="leaderboard-screen" class="box" style="display: none;">
+            <h2>Liderlik Tablosu</h2>
+            <ol id="leaderboard"></ol>
+            <button class="primary-btn" onclick="returnToMenu()">Menüye Dön</button>
+
+            <button class="primary-btn" onclick="changeUser()">Kullanıcıyı Değiştir</button>
+        </div>
+
+        <!-- Modal HTML -->
+        <div id="modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3>Yeni Kullanıcı Adı</h3>
+                <input type="text" id="newUsername" placeholder="Yeni kullanıcı adınızı girin" />
+                <button onclick="saveNewUsername()">Kaydet</button>
+                <button onclick="closeModal()">İptal</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Kullanıcı Adı ve Puanlar
+        let username = "";
+        let leaderboardData = JSON.parse(localStorage.getItem("leaderboardData")) || [];
+
+        // Kullanıcı Adı Girişini Başlat
+        document.getElementById("usernameForm").addEventListener("submit", (event) => {
+            event.preventDefault();
+            username = document.getElementById("usernameInput").value.trim();
+            // Kullanıcı adı LocalStorage'da saklanıyor
+            localStorage.setItem("currentUser", username);
+            document.getElementById("username-screen").style.display = "none";
+            document.getElementById("category-screen").style.display = "block";
+        });
+
+        // Türkçe tarih soruları
+        const questionEl = document.getElementById("question");
+        const questionFormEl = document.getElementById("questionForm");
+        const scoreEl = document.getElementById("score");
+        const timerEl = document.getElementById("timer");
+        const correctCountEl = document.getElementById("correctCount");
+        const wrongCountEl = document.getElementById("wrongCount");
+        const answerInputEl = document.getElementById("answerInput");
+
+        let score = 0;
+        let correctCount = 0;
+        let wrongCount = 0;
+        let timer;
+        let timeLeft = 30;
+        let currentCategory;
+        let currentQuestionIndex = 0;
+
+        // Rastgele sayı üreten fonksiyon
+        const randomNumber = (min, max) => {
+            return Math.floor(Math.random() * (max - min + 1) + min);
+        };
+
+        // Matematik sorularını dinamik olarak üretir
+        const generateQuestion = () => {
+            const randomNumber1 = randomNumber(1, 10);
+            const randomNumber2 = randomNumber(1, 10);
+            const questionType = randomNumber(1, 4);
+
+            let firstNumber;
+            let secondNumber;
+
+            if (randomNumber1 > randomNumber2 && questionType > 2) {
+                firstNumber = randomNumber1;
+                secondNumber = randomNumber2;
+            } else {
+                firstNumber = randomNumber2;
+                secondNumber = randomNumber1;
+            }
+
+            let question;
+            let answer;
+
+            switch (questionType) {
+                case 1:
+                    question = `Soru: ${firstNumber} çarpı ${secondNumber} kaçtır?`;
+                    answer = firstNumber * secondNumber;
+                    break;
+                case 2:
+                    question = `Soru: ${firstNumber} ile ${secondNumber} toplamı kaçtır?`;
+                    answer = firstNumber + secondNumber;
+                    break;
+                case 3:
+                    question = `Soru: ${firstNumber} bölü ${secondNumber} kaçtır?`;
+                    answer = Math.round((firstNumber / secondNumber) * 100) / 100; // Yuvarlama
+                    break;
+                case 4:
+                    question = `Soru: ${firstNumber} eksi ${secondNumber} kaçtır?`;
+                    answer = firstNumber - secondNumber;
+                    break;
+                default:
+                    question = `Soru: ${firstNumber} eksi ${secondNumber} kaçtır?`;
+                    answer = firstNumber - secondNumber;
+                    break;
+            }
+
+            return { question, answer };
+        };
+
+        // Sorular
+        const questions = {
+            Matematik: [], // Dinamik olarak üretilecek
+            Coğrafya: [
+                { question: "Fransa'nın başkenti neresidir?", answer: "Paris" },
+                { question: "Dünyanın en büyük okyanusu hangisidir?", answer: "Pasifik" },
+                { question: "Dünyanın en yüksek dağı nedir?", answer: "Everest" },
+                { question: "Brezilya hangi kıtadadır?", answer: "Güney Amerika" },
+                { question: "Çin Seddi hangi ülkededir?", answer: "Çin" },
+                { question: "Japonya'nın başkenti neresidir?", answer: "Tokyo" },
+                { question: "Dünyanın en küçük ülkesi hangisidir?", answer: "Vatikan" },
+            ],
+            Tarih: [
+                { question: "Türkiye Cumhuriyeti hangi yıl kuruldu?", answer: "1923" },
+                { question: "Osmanlı Devleti'nin kurucusu kimdir?", answer: "Osman Bey" },
+                { question: "İstanbul hangi yıl fethedildi?", answer: "1453" },
+                { question: "Atatürk'ün doğum yılı nedir?", answer: "1881" },
+                { question: "Kurtuluş Savaşı hangi yıl başladı?", answer: "1919" },
+                { question: "Türkiye'nin ilk Cumhurbaşkanı kimdir?", answer: "Mustafa Kemal Atatürk" },
+                { question: "Türkiye'nin başkenti hangi şehirdir?", answer: "Ankara" },
+            ],
+        };
+
+        // 10 adet matematik sorusu oluştur ve sorulara ekle
+        for (let i = 0; i < 10; i++) {
+            const { question, answer } = generateQuestion();
+            questions.Matematik.push({ question, answer });
+        }
+
+        // Soruları doğru şekilde konsola yazdırma
+        console.log("Matematik Soruları: ", questions.Matematik);
+
+        function startGame(category) {
+            // Kategori Ayarı
+            currentCategory = category;
+            currentQuestionIndex = 0;
+            score = 0;
+            correctCount = 0;
+            wrongCount = 0;
+            timeLeft = 30;
+
+            document.getElementById("currentCategory").innerText = category;
+            document.getElementById("category-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "block";
+
+            // Input türü kategorilere göre ayarlanıyor
+            if (category === "Matematik") {
+                answerInputEl.type = "number";
+            } else {
+                answerInputEl.type = "text";
+            }
+
+            scoreEl.innerText = score;
+            correctCountEl.innerText = correctCount;
+            wrongCountEl.innerText = wrongCount;
+
+            startTimer();
+            showQuestion();
+        }
+
+        function startTimer() {
+            const progressBar = document.getElementById("progress-bar");
+            timerEl.innerText = timeLeft;
+
+            timer = setInterval(() => {
+                timeLeft--;
+                timerEl.innerText = timeLeft;
+
+                // İlerleme çubuğunu güncelle
+                const progressPercentage = (timeLeft / 30) * 100;
+                progressBar.style.width = `${progressPercentage}%`;
+
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+
+        function showQuestion() {
+            const currentQuestions = questions[currentCategory];
+            console.log("Current Question List: ", currentQuestions); // Hangi soruların gösterileceğini kontrol et
+            if (currentQuestionIndex < currentQuestions.length) {
+                const currentQuestion = currentQuestions[currentQuestionIndex];
+                questionEl.innerText = currentQuestion.question;
+            } else {
+                endGame();
+            }
+        }
+
+
+        function checkAnswer(event) {
+            event.preventDefault();
+            const userAnswer = answerInputEl.value.trim();
+
+            const currentQuestion = questions[currentCategory][currentQuestionIndex];
+
+            if (userAnswer.toLowerCase() === currentQuestion.answer.toString().toLowerCase()) {
+                score += 10;
+                correctCount++;
+                showToast("Doğru cevap!", "green");
+            } else {
+                wrongCount++;
+                showToast(`Yanlış cevap! Doğru cevap: ${currentQuestion.answer}`, "red");
+            }
+
+            scoreEl.innerText = score;
+            correctCountEl.innerText = correctCount;
+            wrongCountEl.innerText = wrongCount;
+            currentQuestionIndex++;
+            answerInputEl.value = "";
+
+            if (currentQuestionIndex < questions[currentCategory].length) {
+                showQuestion();
+            } else {
+                endGame();
+            }
+        }
+
+
+        // Oyun Sonunda Liderlik Tablosuna Ekle
+        function endGame() {
+            clearInterval(timer);
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("result-screen").style.display = "block";
+
+            document.getElementById("finalScore").innerText = score;
+            document.getElementById("finalCorrectCount").innerText = correctCount;
+            document.getElementById("finalWrongCount").innerText = wrongCount;
+
+            // Liderlik tablosuna ekle
+            leaderboardData.push({ username, score });
+            leaderboardData.sort((a, b) => b.score - a.score); // Puanlara göre sırala
+            // LocalStorage'a liderlik tablosu kaydı
+            localStorage.setItem("leaderboardData", JSON.stringify(leaderboardData));
+            // Liderlik tablosunu göster
+            showLeaderboard();
+        }
+
+
+        // Menüye Dön Fonksiyonu
+        function returnToMenu() {
+            // Tüm ekranları gizle
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("result-screen").style.display = "none";
+            document.getElementById("leaderboard-screen").style.display = "none";
+            // Kategori seçimi ekranını göster
+            document.getElementById("category-screen").style.display = "block";
+
+        }
+
+
+        // Liderlik Tablosunu Göster
+        function showLeaderboard() {
+            const leaderboardEl = document.getElementById("leaderboard");
+            leaderboardEl.innerHTML = "";
+            leaderboardData.forEach(({ username, score }) => {
+                const li = document.createElement("li");
+                li.textContent = `${username}: ${score} puan`;
+                leaderboardEl.appendChild(li);
+            });
+            //document.getElementById("result-screen").style.display = "none";
+            document.getElementById("leaderboard-screen").style.display = "block";
+        }
+
+
+        function closeModal() {
+            document.getElementById("modal").style.display = "none";
+        }
+
+        function openModal() {
+            console.log("Modal açılıyor...");
+            document.getElementById("modal").style.display = "block";
+        }
+
+        function returnToUsernameScreen() {
+            // Tüm ekranları gizle
+            document.getElementById("category-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("result-screen").style.display = "none";
+            document.getElementById("leaderboard-screen").style.display = "none";
+            document.getElementById("modal").style.display = "none";
+            // Kullanıcı adı ekranını göster
+            document.getElementById("username-screen").style.display = "block";
+            // Kullanıcı adı giriş alanını sıfırla
+            document.getElementById("usernameInput").value = "";
+            username = ""; // Kullanıcı adını sıfırla
+        }
+
+
+        function saveNewUsername() {
+            username = document.getElementById("newUsername").value.trim();
+            localStorage.setItem("currentUser", username);
+                closeModal();
+                returnToUsernameScreen(); // İsim ekranına geri dön
+            
+        }
+
+
+        function changeUser() {
+            username = ""; // Kullanıcı adını sıfırla
+            document.getElementById("leaderboard-screen").style.display = "none";
+            document.getElementById("modal").style.display = "block";
+
+            returnToUsernameScreen(); // İsim ekranına geri dön
+        }
+
+
+        function showToast(message, color) {
+            Toastify({
+                text: message,
+                duration: 3000,
+                close: true,
+                gravity: "top",
+                position: "center",
+                style: {
+                    background: color, // eski backgroundColor yerine style.background kullanılıyor
+                },
+            }).showToast();
+        }
+
+
+    </script>
+</body>
+
+</html>
