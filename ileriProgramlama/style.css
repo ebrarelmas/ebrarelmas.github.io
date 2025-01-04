@@ -1,0 +1,198 @@
+
+:root {
+    --primary: #003366; /* Koyu mavi renk */
+    --secondary: #f9f9f9; /* Sekonder renk (daha açık tonlar) */
+    --btn-hover: #004c8c; /* Buton hover efekti için daha koyu mavi */
+  }
+  
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif; /* Tüm sayfa genelinde Poppins fontu kullanılır */
+  }
+  
+  html, body {
+    height: 100%;
+    width: 100%;
+  }
+  
+  body {
+    overflow: hidden; /* Sayfa dışı kaydırma engellenir */
+  }
+  
+  .background {
+    background-image: url('back2.jpg');
+    /* Arka plan resmi atanır */
+    background-size: cover;
+    background-position: center;
+    /* Arka planın ortalanması sağlanır */
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+  
+  .box {
+    background: rgba(240, 240, 240, 0.85);
+    /* Yarı saydam bir açık gri arka plan */
+    border-radius: 20px;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    /* Hafif gölge efekti */
+    padding: 30px;
+    width: 100%;
+    max-width: 500px;
+    /* Kutunun genişliği, belirli bir genişliğe kadar uyum sağlar */
+    text-align: center;
+    /* İçeriği merkezler */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* Yatay ve dikeyde tam ortalama */
+  }
+  
+  .box h2,
+  .box h3 {
+    color: var(--primary);
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+  .box h2 {
+    font-size: 36px;
+  }
+  .box h3 {
+    font-size: 28px;
+  }
+  
+  
+  #questionForm {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+  }
+  
+  #answerInput {
+    padding: 12px;
+    font-size: 18px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    outline: none;
+    transition: 0.3s ease-in-out;
+    /* Input kutusu üzerinde animasyon eklenir */
+  }
+  
+  .primary-btn {
+    background-color: var(--primary);
+    border: none;
+    color: white;
+    font-size: 24px;
+    padding: 12px 25px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    margin-top: 10px; /* Butonların yukarıdan boşluğu */
+  
+  }
+  
+  .primary-btn:hover {
+    background-color: var(--btn-hover);
+    transform: scale(1.05); /* Buton üzerine gelindiğinde biraz büyür */
+  }
+  
+  .primary-btn:focus {
+    outline: none;
+    box-shadow: 0 0 10px var(--primary);
+    transform: scale(1.05); /* Focus durumunda da buton büyür */
+  }
+  
+  #progress-container {
+    width: 100%;
+    height: 20px;
+    background-color: #ddd;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  #progress-bar {
+    height: 100%;
+    width: 100%;
+    background-color: darkred;
+    border-radius: 10px;
+    transition: width 0.5s ease-in-out;
+  }
+  /* Hoş Geldiniz Mesajı */
+.welcome-message h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.welcome-message p {
+  font-size: 1rem;
+  margin-bottom: 2rem;
+}
+  #username-screen {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+    border: 2px dashed var(--primary);
+    padding: 20px;
+    background: rgba(240, 240, 240, 0.9);
+    border-radius: 15px;
+  }
+  
+  #username-screen h2 {
+    font-size: 28px;
+    color: var(--primary);
+  }
+  
+  #leaderboard-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Butonların alta sabitlenmesini sağlar */
+    height: 100%; /* Tam ekran yüksekliği */
+  }
+  
+  #leaderboard {
+    max-height: 50vh; /* Liderlik tablosu için maksimum yükseklik */
+    overflow-y: auto; /* Dikey kaydırma çubuğu ekler */
+    margin-bottom: 20px; /* Butonlarla arasına boşluk bırakır */
+    padding: 10px; /* Liste öğeleri için iç boşluk */
+    border: 1px solid #ccc; /* Çerçeve ekler */
+    border-radius: 5px; /* Köşeleri yuvarlar */
+    background-color: var(--secondary);/* Hafif bir arka plan rengi */
+   
+    
+  }
+  
+  #leaderboard li {
+    display: flex;
+    flex-direction: column; 
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+  }
+  
+  #leaderboard li:hover {/*fareyle gezinme*/
+    background-color: var(--primary);
+    color: white; /* Hover durumunda yazı rengi beyaz olur */
+  }
+  
+  #leaderboard li.updated {
+    transform: scale(1.1);
+    background-color: var(--btn-hover);
+    color: white;
+    /* Güncellenen liderlik tablosu öğesi */
+  }
+  
+  
+  
+  
+  
